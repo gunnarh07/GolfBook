@@ -1,1016 +1,702 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quill's Claim</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --green-dark: #1a3a2a;
-    --green-mid: #2d5a3d;
-    --green-light: #4a8c5c;
-    --green-pale: #e8f5ec;
-    --cream: #faf8f2;
-    --gold: #c9a84c;
-    --gold-light: #f0d98b;
-    --brown: #6b4c2a;
-    --text-dark: #1a1a1a;
-    --text-mid: #4a4a4a;
-    --text-muted: #888;
-    --border: rgba(0,0,0,0.12);
-    --red-score: #c0392b;
-    --blue-score: #1a6fa8;
-  }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--cream);
-    color: var(--text-dark);
-    min-height: 100vh;
-  }
-
-  /* HEADER */
-  .header {
-    background: var(--green-dark);
-    padding: 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
-  }
-  .logo {
-    font-family: 'Playfair Display', serif;
-    color: var(--gold);
-    font-size: 22px;
-    letter-spacing: 0.5px;
-  }
-  .logo span { color: #fff; font-size: 13px; display: block; font-family: 'DM Sans'; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
-  .header-badge {
-    background: var(--gold);
-    color: var(--green-dark);
-    font-size: 11px;
-    font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-  }
-
-  /* NAV TABS */
-  .nav-tabs {
-    display: flex;
-    background: var(--green-mid);
-    border-top: 1px solid rgba(255,255,255,0.08);
-  }
-  .nav-tab {
-    flex: 1;
-    padding: 10px 6px;
-    text-align: center;
-    font-size: 12px;
-    color: rgba(255,255,255,0.6);
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    font-weight: 500;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-  }
-  .nav-tab.active {
-    color: var(--gold-light);
-    border-bottom-color: var(--gold);
-    background: rgba(0,0,0,0.15);
-  }
-  .nav-tab:hover:not(.active) { color: rgba(255,255,255,0.85); }
-
-  /* PAGES */
-  .page { display: none; padding: 1.25rem; }
-  .page.active { display: block; }
-
-  /* SETUP PAGE */
-  .setup-card {
-    background: #fff;
-    border-radius: 12px;
-    border: 0.5px solid var(--border);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-  }
-  .setup-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 16px;
-    color: var(--green-dark);
-    margin-bottom: 1rem;
-    border-bottom: 1px solid var(--green-pale);
-    padding-bottom: 8px;
-  }
-  .field-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-  .field-label { font-size: 13px; color: var(--text-mid); min-width: 80px; }
-  .field-input {
-    flex: 1;
-    border: 0.5px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--text-dark);
-    background: var(--cream);
-    outline: none;
-  }
-  .field-input:focus { border-color: var(--green-light); background: #fff; }
-  .field-select {
-    flex: 1;
-    border: 0.5px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--text-dark);
-    background: var(--cream);
-    outline: none;
-    cursor: pointer;
-  }
-
-  .player-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    background: var(--green-pale);
-    border-radius: 8px;
-    margin-bottom: 8px;
-  }
-  .player-avatar {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 500;
-    color: #fff;
-    flex-shrink: 0;
-  }
-  .player-name-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-family: 'DM Sans';
-    font-size: 14px;
-    color: var(--text-dark);
-    outline: none;
-  }
-  .player-hcp-input {
-    width: 50px;
-    border: 0.5px solid var(--border);
-    border-radius: 6px;
-    padding: 4px 6px;
-    font-size: 13px;
-    text-align: center;
-    background: #fff;
-    outline: none;
-    font-family: 'DM Sans';
-  }
-  .remove-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--text-muted); font-size: 16px; padding: 2px 4px;
-  }
-  .add-player-btn {
-    width: 100%;
-    padding: 8px;
-    border: 1px dashed var(--green-light);
-    background: none;
-    border-radius: 8px;
-    color: var(--green-mid);
-    font-size: 13px;
-    cursor: pointer;
-    font-family: 'DM Sans';
-    transition: all 0.2s;
-  }
-  .add-player-btn:hover { background: var(--green-pale); }
-
-  .start-btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--green-dark);
-    color: var(--gold-light);
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
-    font-family: 'Playfair Display', serif;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    margin-top: 0.5rem;
-    transition: all 0.2s;
-  }
-  .start-btn:hover { background: var(--green-mid); }
-
-  /* SCORECARD PAGE */
-  .round-info {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-  }
-  .round-info h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    color: var(--green-dark);
-  }
-  .round-info-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-  .hole-nav {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .hole-nav-btn {
-    background: var(--green-dark);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    width: 28px; height: 28px;
-    font-size: 14px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .hole-counter {
-    font-size: 13px;
-    color: var(--text-mid);
-    font-weight: 500;
-    min-width: 50px;
-    text-align: center;
-  }
-
-  /* Hole card */
-  .hole-card {
-    background: #fff;
-    border-radius: 12px;
-    border: 0.5px solid var(--border);
-    overflow: hidden;
-    margin-bottom: 1rem;
-  }
-  .hole-header {
-    background: var(--green-dark);
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
-    gap: 16px;
-  }
-  .hole-number {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px;
-    color: #fff;
-    line-height: 1;
-    min-width: 40px;
-  }
-  .hole-number span { font-size: 12px; color: rgba(255,255,255,0.5); font-family: 'DM Sans'; display: block; }
-  .hole-details { flex: 1; }
-  .hole-par-row { display: flex; gap: 16px; }
-  .hole-detail-item { text-align: center; }
-  .hole-detail-item .hd-val {
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--gold-light);
-    line-height: 1;
-  }
-  .hole-detail-item .hd-lbl {
-    font-size: 10px;
-    color: rgba(255,255,255,0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* Par selector */
-  .par-selector {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-  .par-btn {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: none;
-    color: rgba(255,255,255,0.7);
-    font-size: 13px;
-    cursor: pointer;
-    font-family: 'DM Sans';
-    transition: all 0.15s;
-  }
-  .par-btn.selected {
-    background: var(--gold);
-    color: var(--green-dark);
-    border-color: var(--gold);
-    font-weight: 500;
-  }
-
-  /* Stroke input grid */
-  .players-section { padding: 12px 16px; }
-  .player-score-row {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 0.5px solid var(--green-pale);
-    gap: 10px;
-  }
-  .player-score-row:last-child { border-bottom: none; }
-  .ps-avatar {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 500;
-    color: #fff; flex-shrink: 0;
-  }
-  .ps-name { flex: 1; font-size: 14px; }
-  .ps-hcp { font-size: 11px; color: var(--text-muted); }
-
-  /* Stroke counter */
-  .stroke-counter {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .stroke-btn {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: #fff;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text-dark);
-    transition: all 0.15s;
-  }
-  .stroke-btn:hover { background: var(--green-pale); border-color: var(--green-light); }
-  .stroke-val {
-    font-size: 20px;
-    font-weight: 500;
-    min-width: 32px;
-    text-align: center;
-    color: var(--text-dark);
-    border-radius: 6px;
-    padding: 2px 4px;
-    transition: background 0.2s, color 0.2s;
-  }
-  /* Score indicators */
-  .score-eagle { background: #d4a017; color: #fff; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-  .score-birdie { background: var(--red-score); color: #fff; border-radius: 50%; }
-  .score-par { color: var(--text-dark); }
-  .score-bogey { color: var(--blue-score); }
-  .score-double { color: var(--blue-score); font-weight: 700; }
-  .score-triple { color: #8e44ad; font-weight: 700; }
-
-  .score-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 10px;
-    margin-left: 4px;
-  }
-  .badge-eagle { background: #d4a017; color: #fff; }
-  .badge-birdie { background: var(--red-score); color: #fff; }
-  .badge-bogey { background: #dce8f5; color: var(--blue-score); }
-  .badge-double { background: #c5d8ee; color: var(--blue-score); }
-  .badge-par { background: var(--green-pale); color: var(--green-mid); }
-
-  /* Hole minimap */
-  .hole-dots {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-    padding: 12px 16px;
-    border-top: 0.5px solid var(--border);
-    background: #fafafa;
-  }
-  .hdot {
-    width: 24px; height: 24px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background: #fff;
-    color: var(--text-mid);
-    transition: all 0.15s;
-    font-weight: 500;
-  }
-  .hdot.current { border-color: var(--green-dark); background: var(--green-dark); color: #fff; }
-  .hdot.complete { background: var(--green-pale); border-color: var(--green-light); color: var(--green-mid); }
-  .hdot.birdie-dot { background: var(--red-score); border-color: var(--red-score); color: #fff; }
-  .hdot.eagle-dot { background: #d4a017; border-color: #d4a017; color: #fff; }
-  .hdot.bogey-dot { background: #dce8f5; border-color: #b0c8e0; color: var(--blue-score); }
-
-  /* TOTALS PAGE */
-  .totals-section { margin-bottom: 1rem; }
-  .totals-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    color: var(--green-dark);
-    margin-bottom: 1rem;
-  }
-
-  .leaderboard-card {
-    background: #fff;
-    border-radius: 12px;
-    border: 0.5px solid var(--border);
-    overflow: hidden;
-    margin-bottom: 1rem;
-  }
-  .lb-header {
-    background: var(--green-dark);
-    padding: 10px 16px;
-    color: var(--gold-light);
-    font-family: 'Playfair Display', serif;
-    font-size: 14px;
-    letter-spacing: 0.5px;
-  }
-  .lb-row {
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
-    border-bottom: 0.5px solid var(--green-pale);
-    gap: 12px;
-  }
-  .lb-row:last-child { border-bottom: none; }
-  .lb-pos {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    color: var(--text-muted);
-    min-width: 24px;
-  }
-  .lb-pos.gold { color: #c9a84c; }
-  .lb-pos.silver { color: #9e9e9e; }
-  .lb-pos.bronze { color: #a0522d; }
-  .lb-info { flex: 1; }
-  .lb-name { font-size: 15px; font-weight: 500; }
-  .lb-hcp { font-size: 12px; color: var(--text-muted); }
-  .lb-score-col { text-align: right; }
-  .lb-gross { font-size: 20px; font-weight: 500; }
-  .lb-to-par { font-size: 12px; color: var(--text-muted); }
-  .lb-to-par.under { color: var(--red-score); }
-  .lb-to-par.over { color: var(--blue-score); }
-
-  /* Hole-by-hole mini table */
-  .mini-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-  .mini-table th {
-    background: var(--green-dark);
-    color: rgba(255,255,255,0.7);
-    padding: 6px 4px;
-    text-align: center;
-    font-weight: 400;
-    font-size: 11px;
-  }
-  .mini-table td {
-    text-align: center;
-    padding: 7px 4px;
-    border-bottom: 0.5px solid var(--green-pale);
-    color: var(--text-dark);
-  }
-  .mini-table tr:last-child td { border-bottom: none; }
-  .mini-table td.birdie-cell { background: #fff0f0; color: var(--red-score); font-weight: 600; }
-  .mini-table td.eagle-cell { background: #fff8e1; color: #d4a017; font-weight: 700; }
-  .mini-table td.bogey-cell { background: #edf4fc; color: var(--blue-score); }
-  .mini-table td.double-cell { background: #d8ebfa; color: var(--blue-score); font-weight: 600; }
-  .mini-table td.par-name { font-weight: 500; font-size: 11px; text-align: left; padding-left: 12px; }
-  .mini-table td.hole-num { color: var(--text-muted); }
-  .mini-table td.totals-cell { font-weight: 600; background: var(--green-pale); }
-
-  /* Stats */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 1rem;
-  }
-  .stat-card {
-    background: #fff;
-    border: 0.5px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 10px;
-    text-align: center;
-  }
-  .stat-val { font-size: 22px; font-weight: 500; line-height: 1; margin-bottom: 4px; }
-  .stat-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-
-  /* SETTINGS */
-  .settings-card {
-    background: #fff;
-    border-radius: 12px;
-    border: 0.5px solid var(--border);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-  }
-
-  /* Utility */
-  .btn-gold {
-    background: var(--gold);
-    color: var(--green-dark);
-    border: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'DM Sans';
-    transition: all 0.2s;
-  }
-  .btn-gold:hover { background: var(--gold-light); }
-  .btn-outline {
-    background: none;
-    color: var(--green-dark);
-    border: 1px solid var(--green-light);
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    font-family: 'DM Sans';
-    transition: all 0.2s;
-  }
-  .btn-outline:hover { background: var(--green-pale); }
-
-  .empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text-muted);
-  }
-  .empty-state .es-icon { font-size: 40px; margin-bottom: 1rem; opacity: 0.4; }
-  .empty-state p { font-size: 14px; }
-
-  /* Responsive tweak */
-  @media (max-width: 400px) {
-    .hole-par-row { gap: 10px; }
-    .hole-detail-item .hd-val { font-size: 16px; }
-  }
+:root{--ink:#2a1a10;--paper:#f3e3c3;--gold:#d9a441}
+html,body{margin:0;height:100%;overflow:hidden;background:#1b1410;font-family:system-ui,sans-serif;color:var(--paper);color-scheme:dark}
+canvas{display:block}
+#info{position:fixed;top:12px;left:12px;right:12px;text-align:center;font-size:14px;pointer-events:none;text-shadow:0 1px 3px #000}
+#inv{position:fixed;left:12px;bottom:12px;display:flex;flex-direction:column;gap:6px;max-width:60%}
+#inv button{font:inherit;font-size:14px;text-align:left;padding:8px 12px;border-radius:6px;border:2px solid #6b4a2a;background:#3a2517;color:var(--paper);cursor:pointer}
+#inv button.sel{border-color:var(--gold);background:#5a3b22;color:#ffe3a3}
+#inv button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+#inv .t{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#c9a96e}
 </style>
-
-<h2 class="sr-only" style="position:absolute;left:-9999px">Golf Game Book - Scorecard App</h2>
-
-<!-- HEADER -->
-<div class="header">
-  <div class="header-inner">
-    <div class="logo">⛳ GameBook Golf <span>Digital Scorecard</span></div>
-    <div class="header-badge" id="round-status">Setup</div>
-  </div>
-  <div class="nav-tabs">
-    <div class="nav-tab active" onclick="switchTab('setup')">Setup</div>
-    <div class="nav-tab" onclick="switchTab('scorecard')">Scorecard</div>
-    <div class="nav-tab" onclick="switchTab('totals')">Leaderboard</div>
-    <div class="nav-tab" onclick="switchTab('stats')">Stats</div>
-  </div>
-</div>
-
-<!-- SETUP PAGE -->
-<div class="page active" id="page-setup">
-  <div class="setup-card">
-    <h3>Round Details</h3>
-    <div class="field-row">
-      <span class="field-label">Course</span>
-      <input class="field-input" id="course-name" placeholder="Course name" value="Augusta National">
-    </div>
-    <div class="field-row">
-      <span class="field-label">Date</span>
-      <input class="field-input" id="round-date" type="date">
-    </div>
-    <div class="field-row">
-      <span class="field-label">Holes</span>
-      <select class="field-select" id="num-holes">
-        <option value="9">9 holes</option>
-        <option value="18" selected>18 holes</option>
-      </select>
-    </div>
-    <div class="field-row">
-      <span class="field-label">Format</span>
-      <select class="field-select" id="game-format">
-        <option value="strokeplay">Stroke Play</option>
-        <option value="stableford">Stableford</option>
-        <option value="matchplay">Match Play</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="setup-card">
-    <h3>Players</h3>
-    <div id="players-list"></div>
-    <button class="add-player-btn" onclick="addPlayer()">+ Add Player</button>
-  </div>
-
-  <button class="start-btn" onclick="startRound()">Start Round →</button>
-</div>
-
-<!-- SCORECARD PAGE -->
-<div class="page" id="page-scorecard">
-  <div class="round-info">
-    <div>
-      <h2 id="sc-course-name">Augusta National</h2>
-      <div class="round-info-sub" id="sc-date-holes">18 holes · Today</div>
-    </div>
-    <div class="hole-nav">
-      <button class="hole-nav-btn" onclick="prevHole()">‹</button>
-      <span class="hole-counter" id="hole-counter">1 / 18</span>
-      <button class="hole-nav-btn" onclick="nextHole()">›</button>
-    </div>
-  </div>
-
-  <!-- Hole card -->
-  <div class="hole-card">
-    <div class="hole-header">
-      <div class="hole-number"><span>HOLE</span> <span id="hc-number">1</span></div>
-      <div class="hole-details">
-        <div class="hole-par-row">
-          <div class="hole-detail-item">
-            <div class="hd-lbl">Par</div>
-            <div class="hd-val" id="hc-par">4</div>
-          </div>
-          <div class="hole-detail-item">
-            <div class="hd-lbl">Yards</div>
-            <div class="hd-val" id="hc-yards">420</div>
-          </div>
-          <div class="hole-detail-item">
-            <div class="hd-lbl">HCP</div>
-            <div class="hd-val" id="hc-si">7</div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px;letter-spacing:0.5px;">PAR</div>
-        <div class="par-selector" id="par-selector">
-          <button class="par-btn" onclick="setPar(3)">3</button>
-          <button class="par-btn selected" onclick="setPar(4)">4</button>
-          <button class="par-btn" onclick="setPar(5)">5</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="players-section" id="players-scores"></div>
-  </div>
-
-  <!-- Hole dots -->
-  <div class="hole-dots" id="hole-dots"></div>
-</div>
-
-<!-- TOTALS PAGE -->
-<div class="page" id="page-totals">
-  <div class="totals-section">
-    <div class="totals-title" id="lb-title">Leaderboard</div>
-    <div class="leaderboard-card">
-      <div class="lb-header">Current Standings</div>
-      <div id="lb-rows"></div>
-    </div>
-    <div class="leaderboard-card">
-      <div class="lb-header">Hole by Hole</div>
-      <div style="overflow-x: auto;">
-        <table class="mini-table" id="hbh-table"></table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- STATS PAGE -->
-<div class="page" id="page-stats">
-  <div class="totals-title" style="font-family:'Playfair Display',serif;font-size:18px;color:var(--green-dark);margin-bottom:1rem;">Round Statistics</div>
-  <div id="stats-content"></div>
-</div>
-
-<script>
-const AVATARS = ['#2d5a3d','#1a6fa8','#c0392b','#8e44ad','#d4a017','#e67e22'];
-const YARDS_DATA = [420,540,175,380,455,185,450,205,505,430,520,170,405,440,500,195,425,460];
-const SI_DATA = [7,3,15,11,1,17,5,13,9,8,2,16,12,4,6,18,10,14];
-const DEFAULT_PARS = [4,5,3,4,4,3,4,3,5,4,5,3,4,4,5,3,4,4];
-
-let state = {
-  course: 'Augusta National',
-  date: '',
-  numHoles: 18,
-  format: 'strokeplay',
-  players: [],
-  pars: [...DEFAULT_PARS],
-  scores: {},
-  currentHole: 0,
-  started: false
-};
-
-// Init date
-document.getElementById('round-date').value = new Date().toISOString().split('T')[0];
-
-// Default players
-function initPlayers() {
-  state.players = [
-    {id:0, name:'Player 1', hcp:18},
-    {id:1, name:'Player 2', hcp:24},
-  ];
-  renderPlayerSetup();
-}
-
-function renderPlayerSetup() {
-  const list = document.getElementById('players-list');
-  list.innerHTML = state.players.map((p,i) => `
-    <div class="player-row">
-      <div class="player-avatar" style="background:${AVATARS[i%6]}">${getInitials(p.name)}</div>
-      <input class="player-name-input" placeholder="Player name" value="${p.name}"
-        oninput="state.players[${i}].name=this.value; updateAvatars()" />
-      <input class="player-hcp-input" type="number" min="0" max="54" value="${p.hcp}" placeholder="HCP"
-        oninput="state.players[${i}].hcp=parseInt(this.value)||0" />
-      <button class="remove-btn" onclick="removePlayer(${i})">✕</button>
-    </div>
-  `).join('');
-}
-
-function updateAvatars() {
-  document.querySelectorAll('.player-avatar').forEach((el,i) => {
-    el.textContent = getInitials(state.players[i].name);
-  });
-}
-
-function addPlayer() {
-  if(state.players.length >= 6) return;
-  state.players.push({id: state.players.length, name:`Player ${state.players.length+1}`, hcp:18});
-  renderPlayerSetup();
-}
-
-function removePlayer(i) {
-  if(state.players.length <= 1) return;
-  state.players.splice(i,1);
-  state.players.forEach((p,j)=>p.id=j);
-  renderPlayerSetup();
-}
-
-function getInitials(name) {
-  return name.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2) || '?';
-}
-
-function startRound() {
-  state.course = document.getElementById('course-name').value || 'Course';
-  state.date = document.getElementById('round-date').value;
-  state.numHoles = parseInt(document.getElementById('num-holes').value);
-  state.format = document.getElementById('game-format').value;
-  if(state.numHoles === 9) state.pars = DEFAULT_PARS.slice(0,9);
-  else state.pars = [...DEFAULT_PARS];
-
-  // Init scores
-  state.scores = {};
-  state.players.forEach(p => {
-    state.scores[p.id] = Array(state.numHoles).fill(0);
-  });
-  state.currentHole = 0;
-  state.started = true;
-
-  document.getElementById('round-status').textContent = 'Live';
-  document.getElementById('sc-course-name').textContent = state.course;
-  document.getElementById('sc-date-holes').textContent = `${state.numHoles} holes · ${state.date || 'Today'}`;
-  document.getElementById('lb-title').textContent = `Leaderboard — ${state.course}`;
-
-  renderScorecard();
-  renderHoleDots();
-  switchTab('scorecard');
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+tab).classList.add('active');
-  const tabs = ['setup','scorecard','totals','stats'];
-  document.querySelectorAll('.nav-tab')[tabs.indexOf(tab)].classList.add('active');
-
-  if(tab==='totals') renderTotals();
-  if(tab==='stats') renderStats();
-}
-
-function renderScorecard() {
-  const h = state.currentHole;
-  const par = state.pars[h];
-
-  document.getElementById('hc-number').textContent = h+1;
-  document.getElementById('hc-par').textContent = par;
-  document.getElementById('hc-yards').textContent = YARDS_DATA[h] || 400;
-  document.getElementById('hc-si').textContent = SI_DATA[h] || 9;
-  document.getElementById('hole-counter').textContent = `${h+1} / ${state.numHoles}`;
-
-  // Par selector
-  document.querySelectorAll('.par-btn').forEach(b=>{
-    b.classList.toggle('selected', parseInt(b.textContent)===par);
-  });
-
-  // Players
-  const ps = document.getElementById('players-scores');
-  ps.innerHTML = state.players.map((p,i) => {
-    const score = state.scores[p.id][h];
-    const diff = score > 0 ? score - par : 0;
-    let badgeHtml = '';
-    if(score > 0) {
-      if(diff <= -2) badgeHtml = '<span class="score-badge badge-eagle">Eagle</span>';
-      else if(diff === -1) badgeHtml = '<span class="score-badge badge-birdie">Birdie</span>';
-      else if(diff === 0) badgeHtml = '<span class="score-badge badge-par">Par</span>';
-      else if(diff === 1) badgeHtml = '<span class="score-badge badge-bogey">Bogey</span>';
-      else if(diff === 2) badgeHtml = '<span class="score-badge badge-double">Double</span>';
-    }
-    const scoreColor = score===0?'var(--text-muted)':diff<-1?'#d4a017':diff===-1?'var(--red-score)':diff===0?'var(--text-dark)':diff===1?'var(--blue-score)':'#8e44ad';
-    return `<div class="player-score-row">
-      <div class="ps-avatar" style="background:${AVATARS[p.id%6]}">${getInitials(p.name)}</div>
-      <div class="ps-name">${p.name}<div class="ps-hcp">HCP ${p.hcp}</div></div>
-      ${badgeHtml}
-      <div class="stroke-counter">
-        <button class="stroke-btn" onclick="changeScore(${p.id},${h},-1)">−</button>
-        <span class="stroke-val" style="color:${scoreColor}">${score===0?'—':score}</span>
-        <button class="stroke-btn" onclick="changeScore(${p.id},${h},1)">+</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function changeScore(pid, hole, delta) {
-  const par = state.pars[hole];
-  let s = state.scores[pid][hole] + delta;
-  s = Math.max(1, Math.min(s, par+6));
-  // allow going back to 0 (no score)
-  if(state.scores[pid][hole]===1 && delta===-1) s=0;
-  state.scores[pid][hole] = s;
-  renderScorecard();
-  renderHoleDots();
-}
-
-function setPar(p) {
-  state.pars[state.currentHole] = p;
-  renderScorecard();
-}
-
-function nextHole() {
-  if(state.currentHole < state.numHoles-1) { state.currentHole++; renderScorecard(); renderHoleDots(); }
-}
-function prevHole() {
-  if(state.currentHole > 0) { state.currentHole--; renderScorecard(); renderHoleDots(); }
-}
-
-function renderHoleDots() {
-  const dots = document.getElementById('hole-dots');
-  dots.innerHTML = Array.from({length:state.numHoles},(_,i)=>{
-    // Check if any player scored a birdie or better
-    const par = state.pars[i];
-    let cls = '';
-    if(i===state.currentHole) cls='current';
-    else {
-      const scores = state.players.map(p=>state.scores[p.id][i]).filter(s=>s>0);
-      if(scores.length) {
-        const avg = scores.reduce((a,b)=>a+b,0)/scores.length;
-        const diff = avg - par;
-        if(diff<=-2) cls='eagle-dot';
-        else if(diff<-0.5) cls='birdie-dot';
-        else if(diff>0.5) cls='bogey-dot';
-        else cls='complete';
-      }
-    }
-    return `<div class="hdot ${cls}" onclick="goToHole(${i})">${i+1}</div>`;
-  }).join('');
-}
-
-function goToHole(i) {
-  state.currentHole = i;
-  renderScorecard();
-  renderHoleDots();
-}
-
-function getTotal(pid) {
-  return state.scores[pid].reduce((a,b)=>a+b,0);
-}
-
-function getTotalPar() {
-  return state.pars.slice(0,state.numHoles).reduce((a,b)=>a+b,0);
-}
-
-function getToPar(pid) {
-  const completed = state.scores[pid].filter((s,i)=>s>0).map((s,i)=>({s,par:state.pars[i]}));
-  const gross = completed.reduce((a,c)=>a+c.s,0);
-  const par = completed.reduce((a,c)=>a+c.par,0);
-  return gross - par;
-}
-
-function renderTotals() {
-  if(!state.started) {
-    document.getElementById('lb-rows').innerHTML = '<div class="empty-state"><div class="es-icon">🏌️</div><p>Start a round first</p></div>';
-    return;
-  }
-  const sorted = [...state.players].sort((a,b)=>{
-    const ga = getTotal(a.id), gb = getTotal(b.id);
-    if(ga===0&&gb===0) return 0;
-    if(ga===0) return 1; if(gb===0) return -1;
-    return ga-gb;
-  });
-
-  document.getElementById('lb-rows').innerHTML = sorted.map((p,pos)=>{
-    const gross = getTotal(p.id);
-    const tp = getToPar(p.id);
-    const posClass = pos===0?'gold':pos===1?'silver':pos===2?'bronze':'';
-    const posStr = pos===0?'🥇':pos===1?'🥈':pos===2?'🥉':`${pos+1}`;
-    const tpStr = gross===0?'—':tp===0?'E':tp>0?`+${tp}`:String(tp);
-    const tpClass = tp<0?'under':tp>0?'over':'';
-    return `<div class="lb-row">
-      <div class="lb-pos ${posClass}">${posStr}</div>
-      <div class="lb-info">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:28px;height:28px;border-radius:50%;background:${AVATARS[p.id%6]};display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:500">${getInitials(p.name)}</div>
-          <div>
-            <div class="lb-name">${p.name}</div>
-            <div class="lb-hcp">HCP ${p.hcp}</div>
-          </div>
-        </div>
-      </div>
-      <div class="lb-score-col">
-        <div class="lb-gross">${gross||'—'}</div>
-        <div class="lb-to-par ${tpClass}">${tpStr}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  // Hole by hole table
-  const hbh = document.getElementById('hbh-table');
-  const H = state.numHoles;
-  const holeNums = Array.from({length:H},(_,i)=>i+1);
-  let html = `<thead><tr>
-    <th style="text-align:left;padding-left:12px">Player</th>
-    ${holeNums.map(n=>`<th>${n}</th>`).join('')}
-    <th>Total</th>
-  </tr></thead><tbody>`;
-
-  state.players.forEach(p=>{
-    html += `<tr>
-      <td class="par-name">${p.name}</td>
-      ${state.scores[p.id].slice(0,H).map((s,i)=>{
-        if(s===0) return '<td>—</td>';
-        const diff = s - state.pars[i];
-        let cls = diff<=-2?'eagle-cell':diff===-1?'birdie-cell':diff===0?'':diff===1?'bogey-cell':'double-cell';
-        return `<td class="${cls}">${s}</td>`;
-      }).join('')}
-      <td class="totals-cell">${getTotal(p.id)||'—'}</td>
-    </tr>`;
-  });
-
-  html += `<tr>
-    <td class="par-name" style="color:var(--text-muted)">Par</td>
-    ${state.pars.slice(0,H).map(p=>`<td style="color:var(--text-muted);font-size:11px">${p}</td>`).join('')}
-    <td class="totals-cell">${getTotalPar()}</td>
-  </tr></tbody>`;
-  hbh.innerHTML = html;
-}
-
-function renderStats() {
-  if(!state.started) {
-    document.getElementById('stats-content').innerHTML = '<div class="empty-state"><div class="es-icon">📊</div><p>Start a round to see stats</p></div>';
-    return;
-  }
-  let html = '';
-  state.players.forEach((p,pi)=>{
-    const scores = state.scores[p.id];
-    const played = scores.filter(s=>s>0);
-    if(!played.length) return;
-
-    const scoreDiffs = scores.map((s,i)=>s>0?s-state.pars[i]:null).filter(v=>v!==null);
-    const eagles = scoreDiffs.filter(d=>d<=-2).length;
-    const birdies = scoreDiffs.filter(d=>d===-1).length;
-    const pars = scoreDiffs.filter(d=>d===0).length;
-    const bogeys = scoreDiffs.filter(d=>d===1).length;
-    const doubles = scoreDiffs.filter(d=>d>=2).length;
-    const avg = played.reduce((a,b)=>a+b,0)/played.length;
-
-    html += `
-    <div style="margin-bottom:1.25rem">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <div style="width:32px;height:32px;border-radius:50%;background:${AVATARS[p.id%6]};display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:500">${getInitials(p.name)}</div>
-        <div style="font-size:15px;font-weight:500">${p.name}</div>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-val" style="color:var(--gold)">${eagles}</div><div class="stat-lbl">Eagles</div></div>
-        <div class="stat-card"><div class="stat-val" style="color:var(--red-score)">${birdies}</div><div class="stat-lbl">Birdies</div></div>
-        <div class="stat-card"><div class="stat-val" style="color:var(--green-mid)">${pars}</div><div class="stat-lbl">Pars</div></div>
-        <div class="stat-card"><div class="stat-val" style="color:var(--blue-score)">${bogeys}</div><div class="stat-lbl">Bogeys</div></div>
-        <div class="stat-card"><div class="stat-val" style="color:#8e44ad">${doubles}</div><div class="stat-lbl">Double+</div></div>
-        <div class="stat-card"><div class="stat-val">${avg.toFixed(1)}</div><div class="stat-lbl">Avg Score</div></div>
-      </div>
-      <div style="background:#fff;border-radius:10px;border:0.5px solid var(--border);padding:12px;margin-top:8px">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Score Distribution</div>
-        ${renderBar('Eagles', eagles, played.length, '#d4a017')}
-        ${renderBar('Birdies', birdies, played.length, 'var(--red-score)')}
-        ${renderBar('Pars', pars, played.length, 'var(--green-light)')}
-        ${renderBar('Bogeys', bogeys, played.length, 'var(--blue-score)')}
-        ${renderBar('Double+', doubles, played.length, '#8e44ad')}
-      </div>
-    </div>`;
-  });
-  document.getElementById('stats-content').innerHTML = html || '<div class="empty-state"><p>No scores entered yet</p></div>';
-}
-
-function renderBar(label, count, total, color) {
-  const pct = total > 0 ? Math.round(count/total*100) : 0;
-  return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-    <div style="font-size:11px;min-width:52px;color:var(--text-mid)">${label}</div>
-    <div style="flex:1;background:var(--green-pale);border-radius:4px;height:8px;overflow:hidden">
-      <div style="width:${pct}%;background:${color};height:100%;border-radius:4px;transition:width 0.3s"></div>
-    </div>
-    <div style="font-size:11px;min-width:30px;text-align:right;color:var(--text-muted)">${count}</div>
-  </div>`;
-}
-
-// Init
-initPlayers();
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
 </script>
+
+</head>
+<body>
+<div id="info">Drag to look, click to act. On a Quest 3, open this page in the Meta Quest Browser and tap Enter VR.</div>
+<div id="inv" aria-label="Pockets"></div>
+<script type="module">
+import * as THREE from 'three';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
+
+/* ================= renderer / scene ================= */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.xr.enabled = true;
+document.body.appendChild(renderer.domElement);
+document.body.appendChild(VRButton.createButton(renderer));
+
+const scene = new THREE.Scene();
+const DAY_SKY = new THREE.Color(0xa9cde8), DAY_FOG = new THREE.Color(0xe3c79d);
+const DUSK_SKY = new THREE.Color(0xf09a55), DUSK_FOG = new THREE.Color(0xe8a46a);
+scene.background = DAY_SKY.clone();
+scene.fog = new THREE.Fog(DAY_FOG.clone(), 18, 80);
+
+const rig = new THREE.Group();
+scene.add(rig);
+const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 200);
+camera.position.set(0, 1.6, 0);
+rig.add(camera);
+
+const hemi = new THREE.HemisphereLight(0xcfe3ff, 0x7a5a38, 1.15);
+const sun = new THREE.DirectionalLight(0xfff0d0, 2.3);
+sun.position.set(6, 10, 4);
+scene.add(hemi, sun);
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const info = document.getElementById('info');
+const invDom = document.getElementById('inv');
+if (navigator.xr) {
+  navigator.xr.isSessionSupported('immersive-vr').then(ok => {
+    if (ok) info.textContent = 'Tap Enter VR at the bottom of the page to play on your headset, or drag and click to play here.';
+  }).catch(() => {});
+}
+
+/* ================= build helpers ================= */
+const mat = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.9, flatShading: true, ...o });
+const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+const C = (rt, rb, h, s = 10) => new THREE.CylinderGeometry(rt, rb, h, s);
+const S = r => new THREE.SphereGeometry(r, 12, 8);
+const K = (r, h, s = 8) => new THREE.ConeGeometry(r, h, s);
+function mk(geo, color, x = 0, y = 0, z = 0, parent = scene, o) {
+  const m = new THREE.Mesh(geo, mat(color, o));
+  m.position.set(x, y, z);
+  parent.add(m);
+  return m;
+}
+const P = (deg, r) => { const a = deg * Math.PI / 180; return new THREE.Vector3(Math.sin(a) * r, 0, -Math.cos(a) * r); };
+function station(deg, r) {            // a group placed on the ring, its +z side facing the player
+  const g = new THREE.Group();
+  const p = P(deg, r);
+  g.position.copy(p);
+  g.rotation.y = Math.atan2(-p.x, -p.z);
+  scene.add(g);
+  return g;
+}
+function signTex(text, w, h, bg, fg, fs) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.fillStyle = bg; x.fillRect(0, 0, w, h);
+  x.strokeStyle = fg; x.lineWidth = 6; x.strokeRect(8, 8, w - 16, h - 16);
+  x.fillStyle = fg; x.font = `bold ${fs}px Georgia, serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(text, w / 2, h / 2 + 3);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function sign(text, w, h, x, y, z, parent, bg = '#5a3b22', fg = '#f3e3c3', fs = 54, wp = 1.6) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(wp, wp * h / w), new THREE.MeshBasicMaterial({ map: signTex(text, w, h, bg, fg, fs) }));
+  m.position.set(x, y, z); parent.add(m); return m;
+}
+function person(g, x, z, o) {
+  const p = new THREE.Group();
+  p.position.set(x, 0, z);
+  mk(C(0.2, 0.27, 0.95, 10), o.coat, 0, 0.55, 0, p);
+  mk(S(0.15), o.skin || 0xe0b48c, 0, 1.2, 0, p);
+  mk(B(0.09, 0.5, 0.09), o.coat, -0.29, 0.75, 0, p);
+  mk(B(0.09, 0.5, 0.09), o.coat, 0.29, 0.75, 0, p);
+  if (o.hat === 'brim') { mk(C(0.3, 0.3, 0.02, 14), o.hatC, 0, 1.31, 0, p); mk(C(0.14, 0.15, 0.16, 12), o.hatC, 0, 1.4, 0, p); }
+  if (o.hat === 'bonnet') { mk(S(0.18), o.hatC, 0, 1.27, -0.02, p).scale.set(1, 0.7, 1); }
+  if (o.hat === 'visor') { mk(C(0.17, 0.17, 0.05, 12), o.hatC, 0, 1.33, 0, p); mk(B(0.28, 0.02, 0.18), o.hatC, 0, 1.31, 0.15, p); }
+  if (o.apron) mk(B(0.3, 0.55, 0.02), o.apron, 0, 0.5, 0.24, p);
+  g.add(p);
+  return p;
+}
+
+/* ================= world ================= */
+const ground = mk(new THREE.CircleGeometry(90, 48), 0xb08a58, 0, 0, 0, scene, { flatShading: false }); ground.rotation.x = -Math.PI / 2;
+const lane = mk(new THREE.PlaneGeometry(2.2, 14), 0x8f6d44, 0, 0.01, -7, scene, { flatShading: false }); lane.rotation.x = -Math.PI / 2;
+const yard = mk(new THREE.CircleGeometry(2.4, 40), 0x9a774b, 0, 0.012, 0, scene, { flatShading: false }); yard.rotation.x = -Math.PI / 2;
+
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+for (let i = 0; i < 30; i++) {
+  const a = (i / 30) * Math.PI * 2, r = 42 + rnd() * 10, h = 12 + rnd() * 14;
+  mk(K(8 + rnd() * 6, h, 5), new THREE.Color().setHSL(0.04 + rnd() * 0.04, 0.4, 0.42 + rnd() * 0.1), Math.cos(a) * r, h / 2, Math.sin(a) * r);
+}
+for (let i = 0; i < 46; i++) {
+  const a = rnd() * Math.PI * 2, r = 16 + rnd() * 18;
+  const x = Math.cos(a) * r, z = Math.sin(a) * r;
+  mk(C(0.12, 0.17, 1.2, 6), 0x5a3b22, x, 0.6, z);
+  mk(K(0.95, 2.4, 7), 0x2f5d34, x, 2.2, z);
+  mk(K(0.7, 1.7, 7), 0x3a6e3e, x, 3.2, z);
+}
+// town signpost
+{ const g = station(-12, 5.2); mk(B(0.1, 1.5, 0.1), 0x5a3b22, 0, 0.75, 0, g); sign('COPPER FORD  pop. 41', 512, 160, 0, 1.45, 0.07, g, '#6b4a2a', '#f3e3c3', 48, 1.1); }
+
+/* ---- Quill's cabin (front) ---- */
+const cabin = station(0, 12);
+mk(B(3.4, 2.1, 2.6), 0x7a5233, 0, 1.05, 0, cabin);
+const roofM = mk(K(2.9, 1.3, 4), 0x4a2e1b, 0, 2.75, 0, cabin); roofM.rotation.y = Math.PI / 4; roofM.scale.z = 0.8;
+mk(B(0.9, 1.6, 0.04), 0x14100c, 0, 0.8, 1.31, cabin);               // dark doorway
+const doorPivot = new THREE.Group(); doorPivot.position.set(-0.45, 0, 1.33); cabin.add(doorPivot);
+mk(B(0.9, 1.6, 0.06), 0x8a5a2b, 0.45, 0.8, 0, doorPivot);
+mk(S(0.045), 0xd9a441, 0.8, 0.8, 0.06, doorPivot);
+mk(B(0.5, 0.5, 0.05), 0x2a2018, 1.1, 1.2, 1.31, cabin);
+sign('QUILL', 256, 96, 0, 2.05, 1.32, cabin, '#4a2e1b', '#f3e3c3', 54, 0.9);
+
+/* ---- Pickles the mule (in the lane) ---- */
+const mule = new THREE.Group();
+const muleStart = P(0, 7.2);
+mule.position.copy(muleStart);
+mk(B(0.5, 0.6, 1.15), 0x8d7a66, 0, 0.9, 0, mule);
+mk(B(0.22, 0.5, 0.25), 0x8d7a66, 0, 1.3, 0.55, mule).rotation.x = -0.4;
+mk(B(0.24, 0.26, 0.42), 0x9a8672, 0, 1.52, 0.78, mule);
+mk(B(0.16, 0.1, 0.12), 0x4a3b2e, 0, 1.46, 1.0, mule);
+[-1, 1].forEach(s => { mk(B(0.06, 0.28, 0.05), 0x8d7a66, s * 0.1, 1.76, 0.7, mule).rotation.z = -s * 0.2; });
+[[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => mk(B(0.1, 0.62, 0.1), 0x6e5d4c, sx * 0.17, 0.31, sz * 0.4, mule));
+mk(B(0.08, 0.08, 0.5), 0x4a3b2e, 0, 0.98, -0.8, mule).rotation.x = 0.5;
+mule.rotation.y = 0;
+scene.add(mule);
+
+/* ---- forge (right) ---- */
+const forge = station(72, 6.5);
+mk(B(1.8, 1.1, 1.2), 0x6e6a64, 0.2, 0.55, -0.9, forge);
+mk(B(0.4, 2.2, 0.4), 0x5d5953, 0.7, 1.1, -1.1, forge);
+mk(B(1.3, 0.04, 0.8), 0xff7a1a, 0.1, 1.11, -0.8, forge, { emissive: 0xff5a00, emissiveIntensity: 1.2 }).userData.noHL = true;
+mk(C(0.22, 0.28, 0.5, 8), 0x5a3b22, -1.2, 0.25, 0.1, forge);
+mk(B(0.5, 0.18, 0.2), 0x2c2c30, -1.2, 0.58, 0.1, forge);
+mk(B(1.9, 0.15, 0.95), 0x6b4a2a, -2.5, 0.75, 0.8, forge);             // wagon bed
+[-0.7, 0.7].forEach(x => { const w = mk(C(0.45, 0.45, 0.07, 14), 0x4a2e1b, -2.5 + x, 0.45, 1.3, forge); w.rotation.x = Math.PI / 2; });
+sign('KETTLE & DAUGHTER SMITHY', 640, 128, 0.2, 2.4, -0.68, forge, '#3a2517', '#f3e3c3', 44, 1.7);
+const dora = person(forge, 0.2, 0.5, { coat: 0x3b4a63, hat: 'visor', hatC: 0x24201b, apron: 0x2c2018 });
+
+/* ---- mess tent (left) ---- */
+const mess = station(-72, 6.5);
+const tent = mk(K(2.1, 2.5, 4), 0xdacbb0, 0, 1.25, -1.2, mess); tent.rotation.y = Math.PI / 4;
+mk(B(1.8, 0.1, 0.8), 0x7a5233, 0.1, 0.85, 0.35, mess);
+[-0.8, 0.9].forEach(x => mk(B(0.08, 0.85, 0.08), 0x5a3b22, x, 0.42, 0.35, mess));
+mk(C(0.26, 0.22, 0.28, 12), 0x2a2a2e, 0.55, 1.04, 0.35, mess);
+sign('HATTIE’S BISCUITS', 512, 128, 0, 2.6, -0.1, mess, '#7a3b22', '#ffe9c4', 52, 1.5);
+const hattie = person(mess, -0.5, 1.0, { coat: 0xb55a3c, hat: 'bonnet', hatC: 0xf3e3c3, apron: 0xf3e3c3 });
+
+/* ---- assay office (rear right) ---- */
+const office = station(140, 8);
+mk(B(3.4, 2.7, 2.2), 0x6b5236, 0, 1.35, -1.2, office);
+mk(B(3.4, 1.0, 0.12), 0x6b5236, 0, 3.1, -0.15, office);
+sign('ASSAY OFFICE', 512, 128, 0, 3.1, -0.07, office, '#2e2a24', '#e8d9a8', 56, 1.9);
+mk(B(2.0, 0.9, 0.5), 0x8a5a2b, 0, 0.45, 0.2, office);
+mk(B(0.5, 0.04, 0.35), 0xf3e3c3, 0.5, 0.92, 0.2, office);
+const finch = person(office, 0, -0.1, { coat: 0x2d2d33, hat: 'visor', hatC: 0x26382c });
+const barnaby = person(office, 2.4, 1.3, { coat: 0x8a6a3e, hat: 'brim', hatC: 0x5a3b22, skin: 0xd9a77a });
+barnaby.visible = false;
+
+/* ---- creek (rear left) ---- */
+const creekSt = station(-140, 6);
+const water = mk(new THREE.PlaneGeometry(2.6, 26), 0x3d86b5, 0, 0.02, 0, creekSt, { roughness: 0.2, transparent: true, opacity: 0.92, flatShading: false });
+water.rotation.x = -Math.PI / 2; water.rotation.z = Math.PI / 2;
+for (let i = 0; i < 9; i++) mk(S(0.2 + rnd() * 0.2), 0x8a8780, (rnd() - 0.5) * 3.4, 0.05, (rnd() - 0.5) * 12, creekSt);
+
+/* ---- pickups ---- */
+const bucketSt = station(-108, 5);
+mk(B(0.1, 1.2, 0.1), 0x5a3b22, 0, 0.6, 0, bucketSt);
+mk(B(0.5, 0.08, 0.08), 0x5a3b22, 0.2, 1.1, 0, bucketSt);
+const bucketG = new THREE.Group(); bucketG.position.set(0.38, 0.88, 0); bucketSt.add(bucketG);
+mk(C(0.16, 0.12, 0.26, 14), 0x9aa0a6, 0, 0, 0, bucketG, { metalness: 0.5, roughness: 0.5 });
+
+const hayG = station(32, 3.6);
+mk(B(0.9, 0.45, 0.55), 0xd6b45a, 0, 0.22, 0, hayG);
+mk(B(0.9, 0.45, 0.55), 0xc9a64c, 0.5, 0.22, 0.7, hayG).rotation.y = 0.5;
+const shoeG = new THREE.Group(); shoeG.position.set(-0.55, 0.03, 0.7); shoeG.rotation.x = -Math.PI / 2; hayG.add(shoeG);
+{ const t = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.022, 6, 16, Math.PI * 1.7), mat(0x8c9096, { metalness: 0.6, roughness: 0.5 })); t.rotation.z = Math.PI * 0.65; shoeG.add(t); }
+
+/* ================= audio ================= */
+let actx = null;
+function audio() {
+  try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) {}
+}
+function tone(f, d, type = 'sine', v = 0.12, slide = 0, delay = 0) {
+  if (!actx) return;
+  try {
+    const t = actx.currentTime + delay, o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(20, f + slide), t + d);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + d);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + d);
+  } catch (e) {}
+}
+const blip = () => tone(520, 0.05, 'square', 0.05);
+const chime = () => { tone(784, 0.14, 'triangle', 0.14); tone(1175, 0.22, 'triangle', 0.14, 0, 0.09); };
+const nope = () => tone(160, 0.18, 'sawtooth', 0.09, -60);
+const stampSfx = () => { tone(110, 0.25, 'square', 0.25, -60); };
+const fanfare = () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.35, 'triangle', 0.15, 0, i * 0.16));
+
+/* ================= game state ================= */
+const ITEMS = {
+  letter: { name: "Uncle's letter", look: [
+    "Dear kin. If you are reading this, I have been delayed. Again.",
+    "Three things. My cabin key is with Dora at the smithy; she owes me for a wagon axle.",
+    "Hattie's biscuits are the best in the territory, and Pickles my mule will do anything for one.",
+    "The deed is in my cabin. File it at the assay office before sundown, and do not let Finch bully you.  — B. Quill" ] },
+  bucket: { name: 'Tin bucket', look: ['A dented tin bucket. It is exactly as empty as it looks.'] },
+  waterBucket: { name: 'Bucket of creek water', look: ['Cold, clear, and slopping a little. Walk carefully.'] },
+  biscuit: { name: 'Warm biscuit', look: ['A warm biscuit. It smells like every good decision you have never made.'] },
+  horseshoe: { name: 'Crooked horseshoe', look: ['Slightly bent. Probably still lucky.'] },
+  key: { name: 'Brass key', look: ['A heavy brass key with a tag in Quill’s handwriting: "CABIN. NOT THE OUTHOUSE."'] },
+  deed: { name: "Quill's deed", look: ['Signed and sealed. All it needs is a stamp from the assay office.'] }
+};
+let F = {}, inv = ['letter'], sel = null;
+const has = i => inv.includes(i);
+
+/* ================= dialogue panel ================= */
+const dc = document.createElement('canvas'); dc.width = 1024; dc.height = 400;
+const dctx = dc.getContext('2d');
+const dtex = new THREE.CanvasTexture(dc); dtex.colorSpace = THREE.SRGBColorSpace;
+const panel = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6 * 400 / 1024), new THREE.MeshBasicMaterial({ map: dtex, transparent: true, depthTest: false }));
+panel.renderOrder = 10; panel.visible = false;
+scene.add(panel);
+
+function wrap(ctx, text, maxW) {
+  const words = text.split(' '), lines = []; let cur = '';
+  for (const w of words) {
+    const t = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+function drawDlg(speaker, text, more) {
+  const x = dctx;
+  x.clearRect(0, 0, 1024, 400);
+  x.fillStyle = 'rgba(42,26,16,0.94)'; x.beginPath(); x.roundRect(6, 6, 1012, 388, 26); x.fill();
+  x.strokeStyle = '#d9a441'; x.lineWidth = 6; x.beginPath(); x.roundRect(14, 14, 996, 372, 20); x.stroke();
+  let y = 70;
+  if (speaker) {
+    x.fillStyle = '#d9a441'; x.font = 'bold 38px Georgia, serif'; x.textAlign = 'left'; x.fillText(speaker.toUpperCase(), 44, y); y += 22;
+  }
+  x.fillStyle = '#f7ead0'; x.font = (speaker ? '' : 'italic ') + '42px Georgia, serif'; x.textAlign = 'left';
+  const lines = wrap(x, text, 930);
+  y += 48;
+  lines.slice(0, 5).forEach((l, i) => x.fillText(l, 44, y + i * 54));
+  x.fillStyle = '#c9a96e'; x.font = '26px system-ui, sans-serif'; x.textAlign = 'right';
+  x.fillText(more ? 'trigger / click to continue  ▶' : 'trigger / click to close', 990, 368);
+  dtex.needsUpdate = true;
+}
+const _p = new THREE.Vector3(), _d = new THREE.Vector3();
+function placePanel() {
+  camera.updateWorldMatrix(true, false);
+  camera.getWorldPosition(_p); camera.getWorldDirection(_d);
+  _d.y = 0; if (_d.lengthSq() < 1e-4) _d.set(0, 0, -1); _d.normalize();
+  panel.position.copy(_p).addScaledVector(_d, 1.6); panel.position.y = _p.y - 0.18;
+  panel.lookAt(_p.x, panel.position.y, _p.z);
+}
+let dlg = null;
+function showLine() {
+  const raw = dlg.lines[dlg.i], k = raw.indexOf('|');
+  drawDlg(k > 0 ? raw.slice(0, k) : '', k > 0 ? raw.slice(k + 1) : raw, dlg.i < dlg.lines.length - 1);
+}
+function say(lines, done) {
+  dlg = { lines, i: 0, done };
+  placePanel(); panel.visible = true; showLine();
+}
+function advance() {
+  blip();
+  dlg.i++;
+  if (dlg.i >= dlg.lines.length) { const d = dlg.done; dlg = null; panel.visible = false; if (d) d(); }
+  else showLine();
+}
+
+/* ================= inventory ================= */
+const ic = document.createElement('canvas'); ic.width = 512; ic.height = 512;
+const ictx = ic.getContext('2d');
+const itex = new THREE.CanvasTexture(ic); itex.colorSpace = THREE.SRGBColorSpace;
+const invPanel = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), new THREE.MeshBasicMaterial({ map: itex, transparent: true, side: THREE.DoubleSide }));
+invPanel.visible = false;
+const INV_HEAD = 70, INV_ROW = 66;
+function refreshInv() {
+  const x = ictx;
+  x.clearRect(0, 0, 512, 512);
+  x.fillStyle = 'rgba(42,26,16,0.95)'; x.beginPath(); x.roundRect(4, 4, 504, 504, 24); x.fill();
+  x.strokeStyle = '#d9a441'; x.lineWidth = 6; x.beginPath(); x.roundRect(10, 10, 492, 492, 20); x.stroke();
+  x.fillStyle = '#c9a96e'; x.font = 'bold 30px system-ui, sans-serif'; x.textAlign = 'left'; x.fillText('POCKETS', 30, 54);
+  inv.forEach((id, i) => {
+    const y = INV_HEAD + i * INV_ROW;
+    if (id === sel) { x.fillStyle = '#6b4a22'; x.fillRect(22, y + 4, 468, INV_ROW - 8); }
+    x.fillStyle = id === sel ? '#ffe3a3' : '#f3e3c3'; x.font = '31px Georgia, serif';
+    x.fillText(ITEMS[id].name, 34, y + 43);
+  });
+  itex.needsUpdate = true;
+  invDom.innerHTML = '';
+  if (inv.length) { const t = document.createElement('div'); t.className = 't'; t.textContent = 'Pockets'; invDom.appendChild(t); }
+  inv.forEach(id => {
+    const b = document.createElement('button');
+    b.textContent = ITEMS[id].name; b.id = 'item-' + id;
+    if (id === sel) b.className = 'sel';
+    b.addEventListener('click', e => { e.stopPropagation(); audio(); clickItem(id); });
+    invDom.appendChild(b);
+  });
+}
+function give(id) { inv.push(id); chime(); refreshInv(); }
+function take(id) { inv = inv.filter(i => i !== id); if (sel === id) sel = null; refreshInv(); }
+function clickItem(id) {
+  if (dlg) { advance(); return; }
+  if (sel === id) { sel = null; refreshInv(); say(ITEMS[id].look); return; }
+  sel = id; refreshInv(); blip();
+  say(['Holding: ' + ITEMS[id].name + '. Aim at something and use it, or select the item again to examine it.']);
+}
+
+/* ================= hotspots ================= */
+const hot = [];
+function addHot(id, label, group, cx, cy, cz, radius, handler) {
+  const target = new THREE.Mesh(new THREE.SphereGeometry(radius, 8, 6), new THREE.MeshBasicMaterial({ visible: false }));
+  target.position.set(cx, cy, cz);
+  group.add(target);
+  const h = { id, label, group, target, handler, active: true };
+  target.userData.hot = h;
+  hot.push(h);
+  return h;
+}
+const NOPE = [
+  'That does not seem to work.', 'You try it. Nothing happens, and it is a bit embarrassing.',
+  'Not quite. The world remains unimpressed.', 'You think about it. Then you think better of it.'
+];
+let nopeI = 0;
+function bad() { nope(); say([NOPE[nopeI++ % NOPE.length]]); }
+function use(h) {
+  const item = sel;
+  if (!h.active) return;
+  h.handler(item);
+}
+
+const hBucket = addHot('bucket', 'Tin bucket', bucketSt, 0.38, 0.88, 0, 0.3, item => {
+  if (item) return bad();
+  hBucket.active = false; bucketG.visible = false; give('bucket');
+  say(['You lift a dented tin bucket off the fence post. It is yours now.']);
+});
+const hShoe = addHot('horseshoe', 'Horseshoe', hayG, -0.55, 0.1, 0.7, 0.3, item => {
+  if (item) return bad();
+  hShoe.active = false; shoeG.visible = false; give('horseshoe');
+  say(['A horseshoe, lying in the dust beside the hay. A bit crooked. Lucky, people say.']);
+});
+addHot('creek', 'Crooked Creek', creekSt, 0, 0.1, 0, 1.4, item => {
+  if (item === 'bucket') {
+    take('bucket'); give('waterBucket');
+    return say(['You dip the bucket into Crooked Creek and haul it out full. The creek seems relieved to be useful.']);
+  }
+  if (item === 'waterBucket') return say(['It is already full. Do not be greedy; it is a small creek.']);
+  if (item) return bad();
+  say(['Crooked Creek. Cold, quick, and a lot smaller than the brochure suggested.']);
+});
+const hHattie = addHot('hattie', 'Hattie, the cook', mess, -0.5, 1.0, 1.0, 0.55, item => {
+  if (item === 'waterBucket') {
+    take('waterBucket'); give('biscuit'); F.hattie = 2;
+    return say([
+      'Hattie|Bless you, hon, that is sweet and cold. Here, still warm.',
+      'You got a warm biscuit.',
+      'Hattie|Pickles would sell his own mother for one of those. Not that I know he has one.'
+    ]);
+  }
+  if (item) return say(['Hattie|I have no use for that, hon. Water, I need. Water.']);
+  if (F.hattie === 2) return say(['Hattie|The next batch is not quick, so go and put that biscuit to good use.']);
+  if (!F.hattie) {
+    F.hattie = 1;
+    return say([
+      'Hattie|Well, hang my apron. You have Barnaby Quill’s chin. You must be kin.',
+      'Hattie|The dough is rising, but my water barrel is bone dry. Bring me a bucket of creek water and I will feed you.'
+    ]);
+  }
+  if (has('bucket')) return say(['Hattie|That bucket will not walk itself to the creek, hon. It is behind you, past the post.']);
+  say(['Hattie|A bucket of creek water, hon. There is a bucket on a fence post somewhere behind you.']);
+});
+const hDora = addHot('dora', 'Dora, the blacksmith', forge, 0.2, 1.0, 0.5, 0.55, item => {
+  if (item === 'horseshoe') {
+    take('horseshoe'); give('key'); F.dora = 2;
+    return say([
+      'Dora|Crooked as a fence rail, but it will hold. That mare has been tapping her hoof at me all morning.',
+      'Dora|Here is Barnaby’s key. Brass, ugly, and heavier than it looks.',
+      'You got a brass key.'
+    ]);
+  }
+  if (item) return say(['Dora|Not what I need, friend. I need iron, shaped like a U.']);
+  if (F.dora === 2) return say(['Dora|Tell Barnaby he still owes me for the axle.']);
+  F.dora = 1;
+  say([
+    'Dora|You are Quill’s kin? He left a key with me. Said not to hand it over until the wagon work was done.',
+    'Dora|I am short one horseshoe for the mare. Find me one and the key is yours.'
+  ]);
+});
+const hMule = addHot('mule', 'Pickles, the mule', mule, 0, 1.0, 0.2, 0.75, item => {
+  if (item === 'biscuit') {
+    take('biscuit'); F.mule = 1;
+    say([
+      'You hold out the biscuit. Pickles considers it, then you, then the biscuit. A deal is struck.',
+      'Pickles trots off to enjoy his winnings, and the lane to the cabin is clear.'
+    ]);
+    const from = mule.position.clone(), to = P(0, 7.2).add(new THREE.Vector3(3.2, 0, 1.6));
+    tween(1.6, t => { mule.position.lerpVectors(from, to, t); mule.rotation.y = -t * 0.9; });
+    return;
+  }
+  if (item) return say(['Pickles sniffs it, finds it uninteresting, and returns to blocking the lane.']);
+  if (F.mule) return say(['Pickles chews contentedly and ignores you, which seems to be his gift.']);
+  say([
+    'Pickles the mule is parked in the lane to Quill’s cabin. He regards you the way a bank regards a loan application.',
+    'He is not interested in hay. Something warm and buttered, perhaps.'
+  ]);
+});
+const hCabin = addHot('cabin', "Quill's cabin", cabin, 0, 1.0, 1.4, 1.6, item => {
+  if (!F.mule) return say(['Pickles stands in the lane between you and the cabin. He looks very pleased with himself.']);
+  if (item === 'key') {
+    take('key'); F.open = 1;
+    say(['The key turns with a clunk. The door swings out with a long, dramatic creak.']);
+    tween(1, t => { doorPivot.rotation.y = -t * 1.6; });
+    return;
+  }
+  if (item) return bad();
+  if (!F.open) return say(['The cabin door is locked. A brass lock, no less. You will need the key Dora is holding.']);
+  if (!F.deed) {
+    F.deed = 1; give('deed');
+    return say([
+      'Inside: one cot, one stove, and a tin box on the table, marked "DEED. DO NOT LOSE. I MEAN IT."',
+      'You got Quill’s deed.'
+    ]);
+  }
+  say(['Nothing left in the cabin but dust and one very surprised spider.']);
+});
+const hFinch = addHot('finch', 'Mr. Finch, assay clerk', office, 0, 1.0, -0.1, 0.55, item => {
+  if (item === 'deed') return ending();
+  if (item) return say(['Finch|I do not accept that. I accept paper, with a signature.']);
+  if (has('deed')) return say(['Finch|Well? Do not wave it about. Hand it over.']);
+  say([
+    'Finch|Claims close at sundown. No deed, no claim. I wrote the rules, and I enjoy them.',
+    'Finch|Come back with paper.'
+  ]);
+});
+
+/* ================= tween / ending / reset ================= */
+const tweens = [];
+function tween(dur, fn) { tweens.push({ t: 0, dur, fn }); }
+function setDusk(on) {
+  const sky = on ? DUSK_SKY : DAY_SKY, fog = on ? DUSK_FOG : DAY_FOG;
+  scene.background.copy(sky); scene.fog.color.copy(fog);
+  sun.color.set(on ? 0xffb070 : 0xfff0d0); sun.position.set(on ? -9 : 6, on ? 3 : 10, on ? 6 : 4);
+}
+function ending() {
+  take('deed');
+  say([
+    'Finch|Let me see that. Hm. Signed. Sealed. Remarkably correct.',
+    'Finch lifts his stamp and brings it down with a thump that rattles the whole office.',
+    'Finch|Claim recorded. Number one. Your uncle will be pleased, wherever he is.'
+  ], () => {
+    stampSfx(); setDusk(true); barnaby.visible = true;
+    setTimeout(fanfare, 250);
+    say([
+      'The sun slides behind the hills and the sky goes the color of a ripe peach.',
+      'Barnaby|There you are! Sorry I am late. I took a wrong turn at the second mountain. And the third.',
+      'Barnaby|Come on. The first round of biscuits is on me.',
+      "THE END|You filed Quill's Claim in the nick of time. Pull the trigger to play again."
+    ], () => { resetGame(); intro(); });
+  });
+}
+function resetGame() {
+  F = {}; inv = ['letter']; sel = null;
+  bucketG.visible = true; hBucket.active = true;
+  shoeG.visible = true; hShoe.active = true;
+  mule.position.copy(muleStart); mule.rotation.y = 0;
+  doorPivot.rotation.y = 0;
+  barnaby.visible = false; setDusk(false);
+  refreshInv();
+}
+function intro() {
+  const vr = renderer.xr.isPresenting;
+  say([
+    "QUILL'S CLAIM|Copper Ford, 1849. Four tents, one forge, and a creek that is mostly rumor.",
+    'You came on the strength of a letter from your Uncle Barnaby Quill. He has staked a claim. He has also, in true Quill fashion, vanished.',
+    'The assay office stamps claims until sundown. Find his deed and get it filed before Mr. Finch locks up.',
+    vr ? 'Point at people and things and pull the trigger. Your pockets are on your left wrist: aim at an item to hold it, then aim at something to use it. Thumbstick turns you.'
+       : 'Drag to look around. Click people and things to act. Pick an item from your pockets in the corner, then click something to use it.'
+  ]);
+}
+
+/* ================= input ================= */
+const rc = new THREE.Raycaster(); rc.far = 14;
+const tm = new THREE.Matrix4();
+function rayFromCtrl(c) {
+  tm.identity().extractRotation(c.matrixWorld);
+  rc.ray.origin.setFromMatrixPosition(c.matrixWorld);
+  rc.ray.direction.set(0, 0, -1).applyMatrix4(tm);
+}
+function pick() {
+  const res = { dist: 14 };
+  if (renderer.xr.isPresenting && invPanel.visible && !dlg) {
+    const hi = rc.intersectObject(invPanel, false)[0];
+    if (hi && hi.distance < 2) {
+      const row = Math.floor(((1 - hi.uv.y) * 512 - INV_HEAD) / INV_ROW);
+      res.dist = hi.distance;
+      if (row >= 0 && row < inv.length) res.item = inv[row];
+      return res;
+    }
+  }
+  if (dlg) return res;
+  const hits = rc.intersectObjects(hot.filter(h => h.active).map(h => h.target), false);
+  if (hits.length) { res.hot = hits[0].object.userData.hot; res.dist = hits[0].distance; res.point = hits[0].point; }
+  return res;
+}
+function activate() {
+  audio();
+  if (dlg) { advance(); return; }
+  const p = pick();
+  if (p.item) return clickItem(p.item);
+  if (p.hot) return use(p.hot);
+  if (sel) { sel = null; refreshInv(); }
+}
+
+const ctrls = [];
+for (let i = 0; i < 2; i++) {
+  const ctrl = renderer.xr.getController(i), grip = renderer.xr.getControllerGrip(i);
+  rig.add(ctrl, grip);
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -1)]), new THREE.LineBasicMaterial({ color: 0xffd98a }));
+  line.scale.z = 3; ctrl.add(line);
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffd98a, depthTest: false }));
+  dot.renderOrder = 11; dot.visible = false; scene.add(dot);
+  const c = { ctrl, grip, line, dot, src: null, latch: false, hasPanel: false, hover: null };
+  ctrls.push(c);
+  ctrl.addEventListener('connected', e => {
+    c.src = e.data;
+    if (e.data.handedness === 'left' && !c.hasPanel) {
+      grip.add(invPanel); invPanel.position.set(0, 0.09, -0.02); invPanel.rotation.set(-Math.PI / 2 + 0.5, 0, 0);
+      invPanel.visible = true; c.hasPanel = true;
+    }
+  });
+  ctrl.addEventListener('disconnected', () => {
+    c.src = null;
+    if (c.hasPanel) { grip.remove(invPanel); invPanel.visible = false; c.hasPanel = false; }
+  });
+  ctrl.addEventListener('selectstart', () => { ctrl.updateWorldMatrix(true, false); rayFromCtrl(ctrl); activate(); });
+}
+
+renderer.xr.addEventListener('sessionstart', () => {
+  info.style.display = 'none'; invDom.style.display = 'none';
+  setTimeout(() => { if (dlg) { placePanel(); } }, 400);
+});
+renderer.xr.addEventListener('sessionend', () => {
+  info.style.display = 'block'; invDom.style.display = 'flex'; invPanel.visible = false;
+});
+
+/* ---- desktop mouse ---- */
+let yaw = 0, pitch = 0, drag = null, mouseHot = null;
+const el = renderer.domElement, ndc = new THREE.Vector2();
+function mouseRay(e) {
+  ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  rc.setFromCamera(ndc, camera);
+}
+el.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, moved: 0 }; el.setPointerCapture?.(e.pointerId); });
+el.addEventListener('pointermove', e => {
+  if (renderer.xr.isPresenting) return;
+  if (drag) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    drag.moved += Math.abs(dx) + Math.abs(dy); drag.x = e.clientX; drag.y = e.clientY;
+    yaw -= dx * 0.004; pitch = Math.max(-1.1, Math.min(1.1, pitch - dy * 0.004));
+    rig.rotation.y = yaw; camera.rotation.x = pitch;
+  }
+  mouseRay(e); const p = pick(); mouseHot = p.hot || null; mouseLabelXY = [e.clientX, e.clientY];
+});
+el.addEventListener('pointerup', e => {
+  const wasDrag = drag && drag.moved > 6; drag = null;
+  if (wasDrag || renderer.xr.isPresenting) return;
+  mouseRay(e); activate();
+});
+let mouseLabelXY = [0, 0];
+
+/* ---- hover label (VR + desktop) ---- */
+const lc = document.createElement('canvas'); lc.width = 512; lc.height = 96;
+const lctx = lc.getContext('2d');
+const ltex = new THREE.CanvasTexture(lc); ltex.colorSpace = THREE.SRGBColorSpace;
+const label = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.6 * 96 / 512), new THREE.MeshBasicMaterial({ map: ltex, transparent: true, depthTest: false }));
+label.renderOrder = 12; label.visible = false; scene.add(label);
+let labelText = '';
+function setLabel(text) {
+  if (text === labelText) return;
+  labelText = text;
+  const x = lctx; x.clearRect(0, 0, 512, 96);
+  x.fillStyle = 'rgba(42,26,16,0.92)'; x.beginPath(); x.roundRect(4, 4, 504, 88, 20); x.fill();
+  x.strokeStyle = '#d9a441'; x.lineWidth = 4; x.beginPath(); x.roundRect(8, 8, 496, 80, 16); x.stroke();
+  x.fillStyle = '#f7ead0'; x.font = '34px Georgia, serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(text, 256, 50);
+  ltex.needsUpdate = true;
+}
+function hlSet(h, on) {
+  h.group.traverse(o => { if (o.isMesh && o.material && o.material.emissive && !o.userData.noHL) o.material.emissive.setHex(on ? 0x4a3410 : 0x000000); });
+}
+let hlCur = null;
+function setHover(h) {
+  if (h === hlCur) return;
+  if (hlCur) hlSet(hlCur, false);
+  hlCur = h;
+  if (h) hlSet(h, true);
+}
+const hoverText = h => sel ? 'Use ' + ITEMS[sel].name + ' on ' + h.label : h.label;
+
+/* ================= main loop ================= */
+const _v = new THREE.Vector3(), clock = new THREE.Clock();
+function frame() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  for (let i = tweens.length - 1; i >= 0; i--) {
+    const w = tweens[i]; w.t += dt;
+    const k = Math.min(1, w.t / w.dur); w.fn(k * k * (3 - 2 * k));
+    if (k >= 1) tweens.splice(i, 1);
+  }
+  let hovered = null, labelPos = null;
+  if (renderer.xr.isPresenting) {
+    scene.updateMatrixWorld();
+    for (const c of ctrls) {
+      const live = !!c.src;
+      c.line.visible = live;
+      if (!live) { c.dot.visible = false; continue; }
+      rayFromCtrl(c.ctrl);
+      const p = pick();
+      c.line.scale.z = Math.min(p.dist, 6);
+      if (p.hot || p.item) {
+        _v.copy(rc.ray.direction).multiplyScalar(p.dist).add(rc.ray.origin);
+        c.dot.position.copy(_v); c.dot.visible = true;
+        if (p.hot && !hovered) { hovered = p.hot; labelPos = (p.point || _v).clone(); }
+      } else c.dot.visible = false;
+      // snap turn on the thumbstick
+      const ax = c.src.gamepad && c.src.gamepad.axes ? (c.src.gamepad.axes[2] || 0) : 0;
+      if (Math.abs(ax) > 0.7 && !c.latch) { c.latch = true; rig.rotation.y -= Math.sign(ax) * Math.PI / 6; }
+      else if (Math.abs(ax) < 0.3) c.latch = false;
+    }
+  } else if (mouseHot && mouseHot.active && !dlg && !drag) {
+    hovered = mouseHot;
+  }
+  if (dlg) hovered = null;
+  setHover(hovered);
+  if (hovered) {
+    setLabel(hoverText(hovered));
+    if (renderer.xr.isPresenting && labelPos) {
+      label.position.copy(labelPos); label.position.y += 0.35;
+      camera.getWorldPosition(_v); label.lookAt(_v.x, label.position.y, _v.z);
+      label.visible = true;
+    } else if (!renderer.xr.isPresenting) {
+      const hp = new THREE.Vector3(); hovered.target.getWorldPosition(hp); hp.y += 0.9;
+      camera.getWorldPosition(_v);
+      label.position.copy(hp); label.lookAt(_v.x, hp.y, _v.z); label.scale.setScalar(Math.max(1, hp.distanceTo(_v) / 4));
+      label.visible = true;
+    }
+  } else label.visible = false;
+  // NPCs glance toward the player slowly: gentle idle bob
+  const t = clock.elapsedTime;
+  dora.position.y = Math.sin(t * 1.6) * 0.012; hattie.position.y = Math.sin(t * 1.3 + 1) * 0.012; finch.position.y = Math.sin(t * 1.1 + 2) * 0.01;
+  renderer.render(scene, camera);
+}
+renderer.setAnimationLoop(frame);
+
+/* ================= start ================= */
+refreshInv();
+intro();
+window.__quill = { hot, say: () => dlg, state: () => ({ F, inv: inv.slice(), sel }), select: id => { sel = id; }, use, advance, activate, hasDlg: () => !!dlg };
+</script>
+
+</body>
+</html>
